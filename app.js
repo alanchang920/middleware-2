@@ -1,39 +1,23 @@
-// app.js
 const express = require('express')
+const dayjs = require('dayjs')
 const app = express()
 const port = 3000
 
-const getActualRequestDurationInMilliseconds = start => {
-  const NS_PER_SEC = 1e9; //  convert to nanoseconds
-  const NS_TO_MS = 1e6; // convert to milliseconds
-  const diff = process.hrtime(start);
-  return (diff[0] * NS_PER_SEC + diff[1]) / NS_TO_MS;
-};
+app.use(function (req, res, next) {
+  const startTime = new Date()
+  const formattedData = new Date().toLocaleString()
+  const method = req.method;
+  const url = req.url
 
-let demoLogger = (req, res, next) => {
-  let current_datetime = new Date()
-  let formatted_date =
-    current_datetime.getFullYear() +
-    "-" +
-    (current_datetime.getMonth() + 1) +
-    "-" +
-    current_datetime.getDate() +
-    " " +
-    current_datetime.getHours() +
-    ":" +
-    current_datetime.getMinutes() +
-    ":" +
-    current_datetime.getSeconds()
-  let method = req.method;
-  let url = req.url
-  const start = process.hrtime();
-  const durationInMilliseconds = getActualRequestDurationInMilliseconds(start);
-  let log = `[${formatted_date}] | ${method} from ${url} ${(durationInMilliseconds.toLocaleString() + "ms")}`
-  console.log(log)
+  res.on('finish', () => {
+    const endTime = new Date()
+    const duration = endTime - startTime
+    let log = `[${formattedData}] | ${method} from ${url} ${duration}ms`
+    console.log(log)
+  })
+
   next()
-};
-
-app.use(demoLogger);
+})
 
 app.get('/', (req, res) => {
   res.send('列出全部 Todo')
